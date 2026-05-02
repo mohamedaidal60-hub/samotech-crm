@@ -4,11 +4,11 @@ import {
   Code, 
   TrendingUp, 
   Clock, 
-  MoreVertical,
   ArrowUpRight,
   Layers
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -41,13 +41,6 @@ const Dashboard = () => {
     { label: 'Projets Média', value: projects.filter(p => p.type === 'media').length.toString(), icon: Film, color: '#00f2ff', trend: '+5%' },
     { label: 'Projets Dev', value: projects.filter(p => p.type === 'dev').length.toString(), icon: Code, color: '#10b981', trend: '+8%' },
     { label: 'En Cours', value: projects.filter(p => p.status !== 'done').length.toString(), icon: Clock, color: '#f59e0b', trend: 'Steady' },
-  ];
-
-  const recentProjects = [
-    { id: 1, client: 'Aroma Verse', type: 'Média', status: 'Scripting', amount: '45,000 DZD', progress: 35 },
-    { id: 2, client: 'DZ Craft', type: 'Dev', status: 'Design', amount: '120,000 DZD', progress: 50 },
-    { id: 3, client: 'Growth Partners', type: 'Média', status: 'Montage', amount: '35,000 DZD', progress: 80 },
-    { id: 4, client: 'Sidali Store', type: 'Média', status: 'Terminé', amount: '15,000 DZD', progress: 100 },
   ];
 
   return (
