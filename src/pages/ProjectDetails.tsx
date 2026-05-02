@@ -260,7 +260,7 @@ const ProjectDetails = () => {
             className="absolute top-6 left-0 h-1 grad-bg z-0 shadow-[0_0_15px_rgba(138,63,255,0.5)]"
           />
           
-          {steps.map((step, i) => {
+          {steps.map((step) => {
             const Icon = step.icon;
             const isCompleted = step.id < currentStep;
             const isCurrent = step.id === currentStep;
