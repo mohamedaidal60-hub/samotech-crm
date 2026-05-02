@@ -6,9 +6,7 @@ import {
   Mic, 
   Camera, 
   Video, 
-  CreditCard, 
   CheckCircle2, 
-  Clock, 
   Upload, 
   ChevronRight,
   Plus,
@@ -21,7 +19,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  Layers
+  Layers,
+  Phone,
+  Building2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
