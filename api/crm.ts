@@ -24,6 +24,10 @@ export default async function handler(req: any, res: any) {
           const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC`;
           return res.status(200).json(projects);
         }
+        if (query.type === 'voiceovers') {
+          const voiceovers = await sql`SELECT * FROM voiceovers WHERE project_id = ${query.projectId} ORDER BY created_at DESC`;
+          return res.status(200).json(voiceovers);
+        }
         break;
 
       case 'POST':
@@ -41,6 +45,15 @@ export default async function handler(req: any, res: any) {
             RETURNING *
           `;
           return res.status(201).json({ lead, project });
+        }
+        if (body.type === 'voiceover') {
+          const { project_id, filename, file_url } = body.data;
+          const [vo] = await sql`
+            INSERT INTO voiceovers (project_id, filename, file_url)
+            VALUES (${project_id}, ${filename}, ${file_url})
+            RETURNING *
+          `;
+          return res.status(201).json(vo);
         }
         break;
 

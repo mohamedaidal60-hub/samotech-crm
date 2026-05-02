@@ -25,31 +25,111 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { supabase } from '../lib/supabase';
+
 const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState<any>(null);
+  const [voiceovers, setVoiceovers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'media' | 'dev'>('media');
   const [currentStep, setCurrentStep] = useState(1);
   const [showFinance, setShowFinance] = useState(false);
 
+  // Recording State
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+
   useEffect(() => {
-    const fetchProject = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get(`/api/crm?type=projects&id=${id}`);
-        setProject(res.data);
-        setActiveTab(res.data.type);
-        setCurrentStep(res.data.current_step);
+        const [projRes, voRes] = await Promise.all([
+          axios.get(`/api/crm?type=projects&id=${id}`),
+          axios.get(`/api/crm?type=voiceovers&projectId=${id}`)
+        ]);
+        setProject(projRes.data);
+        setVoiceovers(voRes.data);
+        setActiveTab(projRes.data.type);
+        setCurrentStep(projRes.data.current_step);
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProject();
+    fetchData();
   }, [id]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+      setAudioChunks([]);
+      
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) setAudioChunks((prev) => [...prev, e.data]);
+      };
+
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        await uploadAudio(audioBlob);
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      alert("Erreur micro: " + err);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+  };
+
+  const uploadAudio = async (blob: Blob) => {
+    setSaving(true);
+    try {
+      const fileName = `vo_${id}_${Date.now()}.wav`;
+      
+      // 1. Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('voiceovers')
+        .upload(fileName, blob);
+
+      if (error) throw error;
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('voiceovers')
+        .getPublicUrl(fileName);
+
+      // 3. Save to Neon DB
+      const res = await axios.post('/api/crm', {
+        type: 'voiceover',
+        data: {
+          project_id: id,
+          filename: fileName,
+          file_url: publicUrl
+        }
+      });
+
+      setVoiceovers([res.data, ...voiceovers]);
+      alert("Voix off enregistrée !");
+    } catch (err: any) {
+      console.error(err);
+      alert("Erreur upload: " + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -251,35 +331,51 @@ const ProjectDetails = () => {
                       </div>
 
                       <div className="p-6 rounded-2xl bg-gradient-to-br from-red-500/10 to-transparent border border-red-500/20 flex flex-col items-center justify-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 animate-pulse">
+                        <div className={`w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 ${isRecording ? 'animate-ping' : ''}`}>
                           <Mic size={32} />
                         </div>
                         <div className="text-center">
-                          <p className="font-bold text-red-400">Enregistrement Direct</p>
-                          <p className="text-xs text-slate-500">Enregistrez via votre micro</p>
+                          <p className="font-bold text-red-400">{isRecording ? 'Enregistrement en cours...' : 'Enregistrement Direct'}</p>
+                          <p className="text-xs text-slate-500">{isRecording ? 'Parlez maintenant' : 'Enregistrez via votre micro'}</p>
                         </div>
-                        <button className="px-6 py-2 rounded-xl bg-red-500 text-white text-sm font-bold shadow-lg shadow-red-500/20 hover:scale-105 transition-transform">
-                          Lancer l'enregistrement
+                        <button 
+                          onClick={isRecording ? stopRecording : startRecording}
+                          disabled={saving && !isRecording}
+                          className={`px-6 py-2 rounded-xl text-white text-sm font-bold shadow-lg transition-transform hover:scale-105 ${
+                            isRecording ? 'bg-slate-700' : 'bg-red-500 shadow-red-500/20'
+                          }`}
+                        >
+                          {isRecording ? 'Arrêter' : 'Lancer l\'enregistrement'}
                         </button>
                       </div>
                     </div>
 
                     <div className="mt-8 space-y-4">
                       <p className="text-sm font-bold text-slate-400">Fichiers enregistrés</p>
-                      <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-                            <Play size={18} fill="currentColor" />
+                      
+                      {voiceovers.length === 0 && <p className="text-xs text-slate-600 italic">Aucun enregistrement pour le moment.</p>}
+                      
+                      {voiceovers.map((vo) => (
+                        <div key={vo.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 group">
+                          <div className="flex items-center gap-4">
+                            <button 
+                              onClick={() => window.open(vo.file_url, '_blank')}
+                              className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary hover:bg-primary/30 transition-all"
+                            >
+                              <Play size={18} fill="currentColor" />
+                            </button>
+                            <div>
+                              <p className="text-sm font-bold">{vo.filename}</p>
+                              <p className="text-[10px] text-slate-500">{new Date(vo.created_at).toLocaleString()}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold">Voix_Off_V1_Arabe.mp3</p>
-                            <p className="text-[10px] text-slate-500">02 Mai 2026 • 1.2 MB</p>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <a href={vo.file_url} download className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
+                              <Upload size={16} className="rotate-180" />
+                            </a>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <button className="p-2 hover:bg-white/10 rounded-lg text-slate-400"><X size={16} /></button>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </motion.div>
