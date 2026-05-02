@@ -84,12 +84,12 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Project List */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex justify-between items-center px-2">
+          <div className="flex justify-between items-center px-2 mb-2">
             <h2 className="text-xl font-bold flex items-center gap-3">
               <Layers className="text-[#8a3fff]" />
               Projets Récents
             </h2>
-            <button className="text-sm text-[#8a3fff] hover:underline font-medium">Voir tout</button>
+            <button className="text-sm text-[#8a3fff] hover:underline font-medium whitespace-nowrap">Voir tout</button>
           </div>
 
           <div className="glass-panel overflow-hidden border-white/5">
@@ -164,22 +164,22 @@ const Dashboard = () => {
             Activité Média
           </h2>
           
-          <div className="glass-panel p-6 space-y-6">
+          <div className="glass-panel p-6 space-y-2">
             {[
               { user: 'Sami', action: 'a terminé le script UGC', target: 'Pack Samotech v2', time: 'Il y a 10 min' },
               { user: 'Amine', action: 'a uploadé une voix off', target: 'Creative Video v1', time: 'Il y a 45 min' },
               { user: 'Yanis', action: 'a validé le shooting', target: 'Branding Pack', time: 'Il y a 2h' },
             ].map((activity, i) => (
-              <div key={i} className="flex gap-4 relative">
-                {i !== 2 && <div className="absolute left-[15px] top-8 bottom-0 w-[1px] bg-white/5"></div>}
-                <div className="w-8 h-8 rounded-full grad-bg flex-shrink-0 flex items-center justify-center text-[10px] font-bold">
+              <div key={i} className="activity-item">
+                {i !== 2 && <div className="avatar-line"></div>}
+                <div className="w-8 h-8 rounded-full grad-bg flex-shrink-0 flex items-center justify-center text-[10px] font-bold z-10">
                   {activity.user[0]}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm">
+                  <p className="text-sm leading-snug">
                     <span className="font-bold">{activity.user}</span> {activity.action} pour <span className="text-[#8a3fff] font-medium">{activity.target}</span>
                   </p>
-                  <p className="text-xs text-slate-500">{activity.time}</p>
+                  <p className="text-[10px] text-slate-500">{activity.time}</p>
                 </div>
               </div>
             ))}

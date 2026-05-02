@@ -6,7 +6,8 @@ import {
   Search, 
   Bell,
   Briefcase,
-  Users
+  Users,
+  Shield
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logo from '../../assets/logo.png';
@@ -18,7 +19,8 @@ const MainLayout = () => {
     { path: '/', icon: LayoutDashboard, label: 'Tableau de Bord' },
     { path: '/new-lead', icon: UserPlus, label: 'Nouveau Lead' },
     { path: '/projects', icon: Briefcase, label: 'Projets' },
-    { path: '/team', icon: Users, label: 'Équipe' },
+    { path: '/clients', icon: Users, label: 'Clients' },
+    { path: '/team', icon: Shield, label: 'Équipe' },
   ];
 
   return (
@@ -95,12 +97,12 @@ const MainLayout = () => {
             
             <div className="h-8 w-[1px] bg-white/10 mx-2"></div>
             
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden md:block">
-                <p className="text-sm font-semibold text-white">Admin Samotech</p>
-                <p className="text-xs text-[#8a3fff]">Directeur d'Agence</p>
+            <div className="flex items-center gap-3 user-badge">
+              <div className="text-right hidden lg:block max-w-[150px]">
+                <p className="text-sm font-semibold text-white truncate">Admin Samotech</p>
+                <p className="text-xs text-[#8a3fff] whitespace-nowrap">Directeur d'Agence</p>
               </div>
-              <div className="w-10 h-10 rounded-full grad-bg flex items-center justify-center font-bold text-white border-2 border-white/20 shadow-lg shadow-primary/20">
+              <div className="w-10 h-10 rounded-full grad-bg flex-shrink-0 flex items-center justify-center font-bold text-white border-2 border-white/20 shadow-lg shadow-primary/20">
                 AS
               </div>
             </div>

@@ -175,20 +175,20 @@ const ProjectDetails = () => {
   };
 
   const mediaSteps = [
-    { id: 1, label: 'Contact & Appel', icon: Clock },
+    { id: 1, label: 'Appel Initial', icon: Phone },
     { id: 2, label: 'Scripting', icon: FileText },
     { id: 3, label: 'Voix Off', icon: Mic },
-    { id: 4, label: 'Shooting', icon: Camera },
-    { id: 5, label: 'Montage', icon: Video },
-    { id: 6, label: 'Paiement', icon: CreditCard },
+    { id: 4, label: 'Tournage', icon: Camera },
+    { id: 5, label: 'Post-Prod', icon: Video },
+    { id: 6, label: 'Livraison', icon: CheckCircle2 },
   ];
 
   const devSteps = [
-    { id: 1, label: 'Besoins / CDC', icon: FileText },
-    { id: 2, label: 'Design UI/UX', icon: PenTool },
+    { id: 1, label: 'Cahier des Charges', icon: FileText },
+    { id: 2, label: 'Design & UX', icon: PenTool },
     { id: 3, label: 'Base de Données', icon: Database },
     { id: 4, label: 'Développement', icon: Code2 },
-    { id: 5, label: 'Déploiement', icon: CheckCircle2 },
+    { id: 5, label: 'Livraison Finale', icon: CheckCircle2 },
   ];
 
   const steps = activeTab === 'media' ? mediaSteps : devSteps;
@@ -209,70 +209,82 @@ const ProjectDetails = () => {
   return (
     <div className="space-y-8">
       {/* Project Header */}
-      <div className="glass-panel p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="glass-panel p-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full grad-bg"></div>
         <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl grad-bg flex items-center justify-center text-2xl font-bold border-2 border-white/20">
+          <div className="w-20 h-20 rounded-2xl grad-bg flex items-center justify-center text-3xl font-bold border-2 border-white/20 shadow-xl shadow-primary/20">
             {project.name[0]}
           </div>
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold">{project.name}</h1>
-              <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold">{project.name}</h1>
+              <span className={`text-xs font-bold px-3 py-1 rounded-full border shadow-lg ${
                 project.status === 'active' ? 'bg-[#8a3fff]/20 text-[#8a3fff] border-[#8a3fff]/30' : 'bg-success/20 text-success border-success/30'
               }`}>
                 {project.status.toUpperCase()}
               </span>
             </div>
-            <p className="text-slate-400 text-sm flex items-center gap-2">
-              <span className="font-semibold text-white">ID:</span> #{project.id.slice(0, 8)}
-            </p>
+            <div className="flex items-center gap-4 text-slate-400 text-sm">
+              <span className="flex items-center gap-1.5"><Building2 size={14} /> {project.company || 'Particulier'}</span>
+              <span className="w-1 h-1 bg-white/20 rounded-full"></span>
+              <span>ID: #{project.id.slice(0, 8)}</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+        <div className="flex flex-wrap items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
           <button 
             onClick={() => setActiveTab('media')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'media' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'media' ? 'bg-primary text-white shadow-[0_0_20px_rgba(138,63,255,0.4)]' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
           >
-            Workflow Média
+            Module Créatif
           </button>
           <button 
             onClick={() => setActiveTab('dev')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'dev' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'dev' ? 'bg-secondary text-white shadow-[0_0_20px_rgba(0,242,255,0.4)]' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
           >
-            Workflow Dev
+            Module Digital
           </button>
         </div>
       </div>
 
-      {/* Workflow Progress Bar */}
-      <div className="glass-panel p-8 relative overflow-hidden">
-        <div className="flex justify-between relative z-10">
+      {/* Progress Journey */}
+      <div className="glass-panel p-10 relative overflow-hidden">
+        <div className="relative flex justify-between items-center z-10 max-w-5xl mx-auto">
+          {/* Progress Line Background */}
+          <div className="absolute top-6 left-0 right-0 h-1 bg-white/5 z-0" />
+          {/* Active Progress Line */}
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+            className="absolute top-6 left-0 h-1 grad-bg z-0 shadow-[0_0_15px_rgba(138,63,255,0.5)]"
+          />
+          
           {steps.map((step, i) => {
             const Icon = step.icon;
             const isCompleted = step.id < currentStep;
             const isCurrent = step.id === currentStep;
             
             return (
-              <div key={step.id} className="flex flex-col items-center gap-3 relative flex-1">
-                {/* Line */}
-                {i < steps.length - 1 && (
-                  <div className={`absolute top-5 left-1/2 w-full h-[2px] ${isCompleted ? 'bg-primary' : 'bg-white/10'}`}></div>
-                )}
-                
+              <div key={step.id} className="flex flex-col items-center gap-4 relative z-10">
                 <button 
                   onClick={() => setCurrentStep(step.id)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all relative z-10 ${
-                    isCompleted ? 'bg-primary border-primary text-white' : 
-                    isCurrent ? 'bg-bg-surface border-primary text-primary shadow-[0_0_15px_rgba(138,63,255,0.4)]' : 
-                    'bg-white/5 border-white/10 text-slate-500'
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-500 transform ${
+                    isCompleted ? 'bg-primary border-primary text-white scale-90' : 
+                    isCurrent ? 'bg-bg-surface border-primary text-primary scale-110 shadow-[0_0_25px_rgba(138,63,255,0.6)] rotate-3' : 
+                    'bg-[#0a0e1a] border-white/10 text-slate-500'
                   }`}
                 >
-                  {isCompleted ? <CheckCircle2 size={18} /> : <Icon size={18} />}
+                  {isCompleted ? <CheckCircle2 size={20} /> : <Icon size={20} />}
                 </button>
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${isCurrent ? 'text-primary' : 'text-slate-500'}`}>
-                  {step.label}
-                </span>
+                <div className="text-center">
+                  <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${isCurrent ? 'text-primary' : isCompleted ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Étape {step.id}
+                  </p>
+                  <p className={`text-xs font-bold whitespace-nowrap ${isCurrent ? 'text-white' : 'text-slate-500'}`}>
+                    {step.label}
+                  </p>
+                </div>
               </div>
             );
           })}

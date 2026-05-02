@@ -6,6 +6,7 @@ import ProjectDetails from './pages/ProjectDetails';
 import Projects from './pages/Projects';
 import Auth from './pages/Auth';
 import Users from './pages/Users';
+import Clients from './pages/Clients';
 
 function App() {
   // Simple auth check placeholder
@@ -22,6 +23,7 @@ function App() {
           <Route path="projects" element={<Projects />} />
           <Route path="project/:id" element={<ProjectDetails />} />
           <Route path="team" element={<Users />} />
+          <Route path="clients" element={<Clients />} />
         </Route>
       </Routes>
     </Router>

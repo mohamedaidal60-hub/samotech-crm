@@ -220,20 +220,35 @@ input:focus, select:focus, textarea:focus {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* Animations */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.flex-wrap { flex-wrap: wrap; }
+.whitespace-nowrap { white-space: nowrap; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-@keyframes ping {
-  75%, 100% { transform: scale(2); opacity: 0; }
+/* Fix Sidebar */
+aside .nav-link {
+  transition: all 0.3s ease;
 }
-.animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+/* Fix Header Overlaps */
+header .user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
-.animate-spin { animation: spin 1s linear infinite; }
+
+/* Fix Activity List */
+.activity-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  position: relative;
+}
+
+.activity-item .avatar-line {
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: -8px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.05);
+}

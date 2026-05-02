@@ -19,7 +19,8 @@ const LeadForm = () => {
     first_name: '',
     last_name: '',
     company: '',
-    phone: ''
+    phone: '',
+    notes: ''
   });
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -45,17 +46,19 @@ const LeadForm = () => {
   };
 
   const activities = [
-    { id: 'ugc', label: 'Vidéos UGC', category: 'Média' },
-    { id: 'creative', label: 'Vidéos Créatives', category: 'Média' },
-    { id: 'pack-samotech', label: 'Pack Samotech', category: 'Média' },
-    { id: 'branding', label: 'Branding', category: 'Média' },
-    { id: 'ads', label: 'Gestion Publicitaire (Ads)', category: 'Média' },
-    { id: 'social', label: 'Community Management', category: 'Média' },
-    { id: 'web-showcase', label: 'Site Vitrine', category: 'Dev' },
-    { id: 'web-ecommerce', label: 'E-commerce', category: 'Dev' },
-    { id: 'saas', label: 'Plateforme SaaS', category: 'Dev' },
-    { id: 'mobile', label: 'App Mobile', category: 'Dev' },
-    { id: 'automation', label: 'Automatisation', category: 'Dev' },
+    { id: 'ugc-basic', label: 'Vidéo UGC (Basic)', category: 'Média' },
+    { id: 'ugc-premium', label: 'Vidéo UGC (Premium)', category: 'Média' },
+    { id: 'creative-ads', label: 'Vidéo Créative Publicitaire', category: 'Média' },
+    { id: 'pack-samotech', label: 'Pack Samotech (Complet)', category: 'Média' },
+    { id: 'branding-identity', label: 'Identité Visuelle / Branding', category: 'Média' },
+    { id: 'social-mgmt', label: 'Gestion Réseaux Sociaux', category: 'Média' },
+    { id: 'voice-over', label: 'Voix Off Seule', category: 'Média' },
+    { id: 'video-editing', label: 'Montage Vidéo Seul', category: 'Média' },
+    { id: 'web-showcase', label: 'Site Vitrine (Next.js/React)', category: 'Dev' },
+    { id: 'web-ecommerce', label: 'E-commerce Complet', category: 'Dev' },
+    { id: 'saas-platform', label: 'Plateforme SaaS / ERP', category: 'Dev' },
+    { id: 'mobile-app', label: 'Application Mobile (iOS/Android)', category: 'Dev' },
+    { id: 'api-integration', label: 'Intégration API / Automatisation', category: 'Dev' },
   ];
 
   const toggleActivity = (id: string) => {
@@ -217,6 +220,16 @@ const LeadForm = () => {
                   </motion.div>
                 );
               })}
+            </div>
+
+            <div className="space-y-2 mt-8">
+              <label className="text-sm font-medium text-slate-400">Objectifs & Détails du projet</label>
+              <textarea 
+                rows={4} 
+                placeholder="Décrivez les objectifs spécifiques du client..."
+                value={(formData as any).notes}
+                onChange={(e) => setFormData({...formData, notes: e.target.value} as any)}
+              ></textarea>
             </div>
           </div>
         </div>
