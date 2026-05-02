@@ -20,7 +20,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  X,
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -100,7 +99,7 @@ const ProjectDetails = () => {
       const fileName = `vo_${id}_${Date.now()}.wav`;
       
       // 1. Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('voiceovers')
         .upload(fileName, blob);
 
