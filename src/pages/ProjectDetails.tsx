@@ -21,7 +21,8 @@ import {
   Loader2,
   Layers,
   Phone,
-  Building2
+  Building2,
+  Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
