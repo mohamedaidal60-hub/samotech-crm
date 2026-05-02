@@ -5,6 +5,7 @@ import LeadForm from './pages/LeadForm';
 import ProjectDetails from './pages/ProjectDetails';
 import Projects from './pages/Projects';
 import Auth from './pages/Auth';
+import Users from './pages/Users';
 
 function App() {
   // Simple auth check placeholder
@@ -20,6 +21,7 @@ function App() {
           <Route path="new-lead" element={<LeadForm />} />
           <Route path="projects" element={<Projects />} />
           <Route path="project/:id" element={<ProjectDetails />} />
+          <Route path="team" element={<Users />} />
         </Route>
       </Routes>
     </Router>

@@ -5,7 +5,8 @@ import {
   LogOut, 
   Search, 
   Bell,
-  Briefcase
+  Briefcase,
+  Users
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logo from '../../assets/logo.png';
@@ -15,8 +16,9 @@ const MainLayout = () => {
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Tableau de Bord' },
-    { path: '/new-lead', icon: UserPlus, label: 'Nouveau Client' },
+    { path: '/new-lead', icon: UserPlus, label: 'Nouveau Lead' },
     { path: '/projects', icon: Briefcase, label: 'Projets' },
+    { path: '/team', icon: Users, label: 'Équipe' },
   ];
 
   return (

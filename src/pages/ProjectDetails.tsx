@@ -151,6 +151,28 @@ const ProjectDetails = () => {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSaving(true);
+    try {
+      const fileName = `${id}_${Date.now()}_${file.name}`;
+      const { error } = await supabase.storage.from('voiceovers').upload(fileName, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('voiceovers').getPublicUrl(fileName);
+      const res = await axios.post('/api/crm', {
+        type: 'voiceover',
+        data: { project_id: id, filename: file.name, file_url: publicUrl }
+      });
+      setVoiceovers([res.data, ...voiceovers]);
+      alert("Fichier média uploadé !");
+    } catch (err: any) {
+      alert("Erreur: " + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const mediaSteps = [
     { id: 1, label: 'Contact & Appel', icon: Clock },
     { id: 2, label: 'Scripting', icon: FileText },
@@ -262,135 +284,120 @@ const ProjectDetails = () => {
           
           {/* MEDIA WORKFLOW CONTENT */}
           {activeTab === 'media' && (
-            <>
-              {/* Step 2: Scripting */}
-              {currentStep === 2 && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                  <div className="glass-panel p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column: Step Specific Content */}
+              <div className="space-y-6">
+                {currentStep === 2 && (
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass-panel p-8">
                     <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                      <FileText className="text-[#8a3fff]" />
-                      Scripting & Scénarios
+                      <FileText className="text-primary" />
+                      Rédaction du Script
                     </h3>
-                    
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-400">Script Vidéo UGC / Créative</label>
-                        <textarea 
-                          rows={8} 
-                          placeholder="Rédigez le script détaillé ici..."
-                          className="bg-white/5 border-white/10"
-                          defaultValue="[Accroche] : Salut tout le monde, aujourd'hui je vous présente Aroma Verse...\n[Corps] : Ce parfum est juste incroyable, j'adore les notes de fond...\n[Call to Action] : Cliquez sur le lien pour commander !"
-                        ></textarea>
-                      </div>
+                    <textarea 
+                      rows={12} 
+                      className="bg-white/5 border-white/10"
+                      placeholder="Tapez le script ici..."
+                    ></textarea>
+                    <div className="flex justify-between mt-4">
+                      <button className="text-xs text-primary font-bold">Générer avec IA</button>
+                      <button className="btn-primary py-2 px-4 text-xs">Sauvegarder Script</button>
+                    </div>
+                  </motion.div>
+                )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-slate-400">Type de Script</label>
-                          <select className="bg-white/5 border-white/10">
-                            <option>Vidéo UGC</option>
-                            <option>Publicité Meta</option>
-                            <option>Spot Publicitaire</option>
-                            <option>Scénario Court-métrage</option>
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-slate-400">Ton du message</label>
-                          <select className="bg-white/5 border-white/10">
-                            <option>Energique / Enthousiaste</option>
-                            <option>Professionnel / Sobre</option>
-                            <option>Luxe / Premium</option>
-                            <option>Humoristique</option>
-                          </select>
-                        </div>
-                      </div>
+                {currentStep === 3 && (
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass-panel p-8 text-center py-20">
+                    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 text-red-500">
+                      <Mic size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Enregistrement Voix Off</h3>
+                    <p className="text-sm text-slate-500 mb-6">Utilisez le module de droite pour enregistrer ou uploader la voix off finale.</p>
+                  </motion.div>
+                )}
+
+                {currentStep >= 4 && (
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass-panel p-8 text-center py-20">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 text-primary">
+                      <Camera size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Production Vidéo</h3>
+                    <p className="text-sm text-slate-500">Étape en cours de traitement par l'équipe technique.</p>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Right Column: Persistent Media Hub (The WOW factor) */}
+              <div className="glass-panel p-8 space-y-6 border-primary/20 bg-gradient-to-br from-[#0a0e1a] to-[#02040a]">
+                <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <Layers size={18} className="text-secondary" />
+                    Média Hub
+                  </h3>
+                  <div className="flex gap-2">
+                    <div className="relative group">
+                      <input 
+                        type="file" 
+                        className="absolute inset-0 opacity-0 cursor-pointer w-10 z-20" 
+                        onChange={handleFileUpload}
+                      />
+                      <button className="p-2 bg-white/5 rounded-xl border border-white/10 text-primary group-hover:bg-primary/10 transition-all">
+                        <Plus size={20} />
+                      </button>
                     </div>
                   </div>
-                </motion.div>
-              )}
+                </div>
 
-              {/* Step 3: Voix Off */}
-              {currentStep === 3 && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                  <div className="glass-panel p-8">
-                    <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                      <Mic className="text-[#00f2ff]" />
-                      Voix Off & Enregistrement
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="p-6 rounded-2xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-4 hover:border-primary/50 transition-all group">
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                          <Upload size={32} />
-                        </div>
-                        <div className="text-center">
-                          <p className="font-bold">Uploader le fichier audio</p>
-                          <p className="text-xs text-slate-500">MP3, WAV (Max 50MB)</p>
-                        </div>
-                        <button className="btn-secondary py-2 px-6 text-sm">Choisir un fichier</button>
+                <div className="grid grid-cols-1 gap-4">
+                  {/* Recording Card */}
+                  <div className={`p-6 rounded-2xl border transition-all ${isRecording ? 'bg-red-500/20 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-white/5 border-white/10 hover:border-red-500/30'}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-red-500/10 text-red-500'}`}>
+                        <Mic size={20} />
                       </div>
-
-                      <div className="p-6 rounded-2xl bg-gradient-to-br from-red-500/10 to-transparent border border-red-500/20 flex flex-col items-center justify-center gap-4">
-                        <div className={`w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 ${isRecording ? 'animate-ping' : ''}`}>
-                          <Mic size={32} />
-                        </div>
-                        <div className="text-center">
-                          <p className="font-bold text-red-400">{isRecording ? 'Enregistrement en cours...' : 'Enregistrement Direct'}</p>
-                          <p className="text-xs text-slate-500">{isRecording ? 'Parlez maintenant' : 'Enregistrez via votre micro'}</p>
-                        </div>
-                        <button 
-                          onClick={isRecording ? stopRecording : startRecording}
-                          disabled={saving && !isRecording}
-                          className={`px-6 py-2 rounded-xl text-white text-sm font-bold shadow-lg transition-transform hover:scale-105 ${
-                            isRecording ? 'bg-slate-700' : 'bg-red-500 shadow-red-500/20'
-                          }`}
-                        >
-                          {isRecording ? 'Arrêter' : 'Lancer l\'enregistrement'}
-                        </button>
-                      </div>
+                      {isRecording && <span className="text-[10px] font-bold text-red-500 animate-pulse uppercase tracking-widest">Enregistrement...</span>}
                     </div>
+                    <button 
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className={`w-full py-2 rounded-xl text-xs font-bold transition-all ${isRecording ? 'bg-red-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+                    >
+                      {isRecording ? 'Arrêter et Sauvegarder' : 'Démarrer Voix Off Directe'}
+                    </button>
+                  </div>
 
-                    <div className="mt-8 space-y-4">
-                      <p className="text-sm font-bold text-slate-400">Fichiers enregistrés</p>
-                      
-                      {voiceovers.length === 0 && <p className="text-xs text-slate-600 italic">Aucun enregistrement pour le moment.</p>}
-                      
-                      {voiceovers.map((vo) => (
-                        <div key={vo.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 group">
-                          <div className="flex items-center gap-4">
-                            <button 
-                              onClick={() => window.open(vo.file_url, '_blank')}
-                              className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary hover:bg-primary/30 transition-all"
-                            >
-                              <Play size={18} fill="currentColor" />
-                            </button>
-                            <div>
-                              <p className="text-sm font-bold">{vo.filename}</p>
-                              <p className="text-[10px] text-slate-500">{new Date(vo.created_at).toLocaleString()}</p>
+                  {/* File List */}
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Fichiers du projet</p>
+                    {voiceovers.length === 0 ? (
+                      <div className="py-12 text-center border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+                        <Upload size={24} className="mx-auto text-slate-700 mb-2" />
+                        <p className="text-xs text-slate-600">Aucun média disponible</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {voiceovers.map((file) => (
+                          <div key={file.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/30 transition-all group">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                {file.filename.match(/\.(mp3|wav|ogg)$/i) ? <Mic size={18} /> : <Video size={18} />}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold truncate w-24">{file.filename}</p>
+                                <p className="text-[9px] text-slate-500">{new Date(file.created_at).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => window.open(file.file_url, '_blank')} className="p-2 hover:bg-primary/20 rounded-lg text-primary">
+                                <Play size={14} fill="currentColor" />
+                              </button>
                             </div>
                           </div>
-                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a href={vo.file_url} download className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
-                              <Upload size={16} className="rotate-180" />
-                            </a>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </motion.div>
-              )}
-
-              {/* Other steps simplified for demonstration */}
-              {(currentStep === 4 || currentStep === 5) && (
-                <div className="glass-panel p-8 text-center py-20">
-                  <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
-                    {currentStep === 4 ? <Camera size={40} className="text-primary" /> : <Video size={40} className="text-primary" />}
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{currentStep === 4 ? 'Shooting en cours' : 'Montage en cours'}</h3>
-                  <p className="text-slate-400 max-w-md mx-auto">Cette étape est gérée par l'équipe de production. Les fichiers seront disponibles bientôt.</p>
                 </div>
-              )}
-            </>
+              </div>
+            </div>
           )}
 
           {/* DEV WORKFLOW CONTENT */}
