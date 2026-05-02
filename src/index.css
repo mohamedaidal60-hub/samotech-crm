@@ -138,34 +138,11 @@ body {
 .overflow-hidden { overflow: hidden; }
 .overflow-y-auto { overflow-y: auto; }
 
-/* Custom Samotech Styles */
-.glass-panel {
-  background: rgba(10, 14, 26, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(138, 63, 255, 0.5);
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px -10px rgba(138, 63, 255, 0.4);
-}
-
-.grad-text {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Responsive & Overlap Fixes */
+@media (max-width: 1024px) {
+  aside {
+    display: none; /* Hide sidebar on mobile/small tablets for now or convert to drawer */
+  }
 }
 
 .grad-bg {
@@ -183,11 +160,17 @@ body {
   gap: 0.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: none;
 }
 
-.btn-primary:hover {
-  transform: scale(1.02);
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
   box-shadow: 0 0 20px rgba(138, 63, 255, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
@@ -198,6 +181,7 @@ body {
   font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
@@ -224,7 +208,7 @@ input:focus, select:focus, textarea:focus {
 .whitespace-nowrap { white-space: nowrap; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Fix Sidebar */
+/* Sidebar Link */
 aside .nav-link {
   transition: all 0.3s ease;
 }
@@ -252,3 +236,97 @@ header .user-badge {
   width: 1px;
   background: rgba(255, 255, 255, 0.05);
 }
+
+.glass-panel {
+  background: rgba(10, 14, 26, 0.6);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--primary);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px -15px rgba(138, 63, 255, 0.3), 0 0 10px rgba(0, 242, 255, 0.1);
+}
+
+.grad-text {
+  background: linear-gradient(135deg, #fff, #8a3fff, #00f2ff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 4s linear infinite;
+}
+
+@keyframes shine {
+  to { background-position: 200% center; }
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 5px rgba(138, 63, 255, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(138, 63, 255, 0.5); }
+  100% { box-shadow: 0 0 5px rgba(138, 63, 255, 0.2); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+/* Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Table Styling */
+table thead th {
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* Inputs */
+input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Tooltip & Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-primary { background: rgba(138, 63, 255, 0.15); color: #8a3fff; border: 1px solid rgba(138, 63, 255, 0.2); }
+.badge-secondary { background: rgba(0, 242, 255, 0.15); color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.2); }
+.badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }

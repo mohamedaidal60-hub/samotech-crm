@@ -1,55 +1,68 @@
--- SAMOTECH CRM - NEON DATABASE SCHEMA
--- Initialize your database with these tables
+-- SamoTech CRM - Database Schema
+-- Run this in your Neon SQL Editor
 
--- 1. Leads Table (Potential Clients)
+-- Leads Table
 CREATE TABLE IF NOT EXISTS leads (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    first_name TEXT NOT NULL,
-    last_name TEXT NOT NULL,
-    company TEXT,
-    phone TEXT,
-    activities TEXT[], -- Array of selected services
-    status TEXT DEFAULT 'prospect', -- prospect, client, inactive
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  company VARCHAR(200),
+  phone VARCHAR(40),
+  activities TEXT[], -- Array of service IDs
+  notes TEXT,
+  status VARCHAR(20) DEFAULT 'new',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Projects Table (Workflows)
+-- Projects Table
 CREATE TABLE IF NOT EXISTS projects (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    lead_id UUID REFERENCES leads(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    type TEXT NOT NULL, -- 'media' or 'dev'
-    current_step INTEGER DEFAULT 1,
-    total_amount DECIMAL(12, 2) DEFAULT 0.00,
-    paid_amount DECIMAL(12, 2) DEFAULT 0.00,
-    status TEXT DEFAULT 'active',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id UUID REFERENCES leads(id) ON DELETE CASCADE,
+  name VARCHAR(200) NOT NULL,
+  type VARCHAR(50) DEFAULT 'media', -- 'media' or 'dev'
+  current_step INTEGER DEFAULT 1,
+  status VARCHAR(20) DEFAULT 'active',
+  total_amount DECIMAL(12, 2) DEFAULT 0,
+  paid_amount DECIMAL(12, 2) DEFAULT 0,
+  script_content TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Scripts Table
-CREATE TABLE IF NOT EXISTS scripts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-    content TEXT,
-    script_type TEXT, -- UGC, Ads, Creative, Spot
-    tone TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 4. VoiceOvers Table (Metadata for audio)
+-- Voiceovers & Media Table
 CREATE TABLE IF NOT EXISTS voiceovers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-    filename TEXT NOT NULL,
-    file_url TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  filename VARCHAR(255) NOT NULL,
+  file_url TEXT NOT NULL,
+  type VARCHAR(20) DEFAULT 'audio', -- 'audio' or 'video'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5. Finance Logs (For audit trail)
-CREATE TABLE IF NOT EXISTS finance_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-    amount DECIMAL(12, 2) NOT NULL,
-    payment_type TEXT, -- deposit, final, installment
-    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- Team Members Table
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(200) UNIQUE NOT NULL,
+  role VARCHAR(50) NOT NULL, -- 'Admin', 'Project Manager', 'Scriptwriter', 'Editor', 'Developer'
+  specialties TEXT[],
+  status VARCHAR(20) DEFAULT 'Online',
+  last_active TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Project Assignments
+CREATE TABLE IF NOT EXISTS assignments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  assigned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(project_id, user_id)
+);
+
+-- Insert sample team members
+INSERT INTO users (name, email, role, status) VALUES 
+('Sidali M.', 'sidali@samotech.dz', 'Admin', 'Online'),
+('Sami B.', 'sami@samotech.dz', 'Chef de Projet', 'Offline'),
+('Amine K.', 'amine@samotech.dz', 'Monteur Vidéo', 'Online')
+ON CONFLICT (email) DO NOTHING;

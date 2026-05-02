@@ -1,16 +1,30 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
   UserPlus, 
   Shield, 
   MoreVertical, 
-  Search
+  Search,
+  Loader2
 } from 'lucide-react';
 
 const Users = () => {
-  const team = [
-    { id: 1, name: 'Sidali M.', role: 'Admin', email: 'sidali@samotech.dz', status: 'Online', lastActive: 'À l\'instant' },
-    { id: 2, name: 'Sami B.', role: 'Chef de Projet', email: 'sami@samotech.dz', status: 'Offline', lastActive: 'Il y a 2h' },
-    { id: 3, name: 'Amine K.', role: 'Monteur Vidéo', email: 'amine@samotech.dz', status: 'Online', lastActive: 'À l\'instant' },
-  ];
+  const [team, setTeam] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const res = await axios.get('/api/crm?type=team');
+        setTeam(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTeam();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -64,7 +78,16 @@ const Users = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {team.map((user) => (
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-20 text-center">
+                  <Loader2 size={32} className="animate-spin mx-auto text-primary mb-2" />
+                  <p className="text-slate-500 text-sm">Chargement de l'équipe...</p>
+                </td>
+              </tr>
+            ) : team.length === 0 ? (
+              <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-500">Aucun membre trouvé.</td></tr>
+            ) : team.map((user) => (
               <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -99,7 +122,7 @@ const Users = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-400">
-                  {user.lastActive}
+                   {user.last_active ? new Date(user.last_active).toLocaleDateString() : 'N/A'}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <button className="p-2 hover:bg-white/10 rounded-lg text-slate-500">

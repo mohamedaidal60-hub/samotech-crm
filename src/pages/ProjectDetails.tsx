@@ -140,7 +140,9 @@ const ProjectDetails = () => {
           id: project.id,
           current_step: currentStep,
           total_amount: project.total_amount,
-          paid_amount: project.paid_amount
+          paid_amount: project.paid_amount,
+          script_content: project.script_content,
+          status: project.status
         }
       });
       alert("Projet sauvegardé !");
@@ -310,10 +312,40 @@ const ProjectDetails = () => {
                       rows={12} 
                       className="bg-white/5 border-white/10"
                       placeholder="Tapez le script ici..."
+                      value={project.script_content || ''}
+                      onChange={(e) => setProject({...project, script_content: e.target.value})}
                     ></textarea>
                     <div className="flex justify-between mt-4">
-                      <button className="text-xs text-primary font-bold">Générer avec IA</button>
-                      <button className="btn-primary py-2 px-4 text-xs">Sauvegarder Script</button>
+                      <button 
+                        className="text-xs text-primary font-bold flex items-center gap-2 hover:text-[#00f2ff] transition-colors"
+                        onClick={async () => {
+                          setSaving(true);
+                          try {
+                            const res = await axios.post('/api/ai', {
+                              projectType: project.type,
+                              clientName: project.company || project.name,
+                              activities: project.activities
+                            });
+                            setProject({...project, script_content: res.data.script});
+                          } catch (err) {
+                            alert("Erreur IA");
+                          } finally {
+                            setSaving(false);
+                          }
+                        }}
+                        disabled={saving}
+                      >
+                        {saving ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                        Générer avec IA
+                      </button>
+                      <button 
+                        className="btn-primary py-2 px-4 text-xs"
+                        onClick={handleSave}
+                        disabled={saving}
+                      >
+                        {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                        Sauvegarder Script
+                      </button>
                     </div>
                   </motion.div>
                 )}
