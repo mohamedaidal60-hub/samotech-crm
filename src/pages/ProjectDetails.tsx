@@ -20,7 +20,8 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Loader2
+  Loader2,
+  Layers
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 

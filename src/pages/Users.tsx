@@ -1,22 +1,16 @@
-import { useState } from 'react';
 import { 
-  Users as UsersIcon, 
   UserPlus, 
-  Mail, 
   Shield, 
   MoreVertical, 
-  Search,
-  CheckCircle2,
-  Clock
+  Search
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const Users = () => {
-  const [team, setTeam] = useState([
+  const team = [
     { id: 1, name: 'Sidali M.', role: 'Admin', email: 'sidali@samotech.dz', status: 'Online', lastActive: 'À l\'instant' },
     { id: 2, name: 'Sami B.', role: 'Chef de Projet', email: 'sami@samotech.dz', status: 'Offline', lastActive: 'Il y a 2h' },
     { id: 3, name: 'Amine K.', role: 'Monteur Vidéo', email: 'amine@samotech.dz', status: 'Online', lastActive: 'À l\'instant' },
-  ]);
+  ];
 
   return (
     <div className="space-y-8">
