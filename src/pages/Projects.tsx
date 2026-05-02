@@ -12,16 +12,27 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
 const Projects = () => {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'media' | 'dev'>('all');
 
-  const projects = [
-    { id: 1, name: 'Aroma Verse - Pack Elite', client: 'Ahmed B.', type: 'Média', status: 'Scripting', progress: 35, date: '02/05/2026' },
-    { id: 2, name: 'DZ Craft - E-commerce', client: 'Karim L.', type: 'Dev', status: 'Design', progress: 50, date: '01/05/2026' },
-    { id: 3, name: 'Growth Partners - Ads', client: 'Yasmine H.', type: 'Média', status: 'Terminé', progress: 100, date: '28/04/2026' },
-    { id: 4, name: 'Sidali Store - Branding', client: 'Sidali M.', type: 'Média', status: 'Shooting', progress: 65, date: '25/04/2026' },
-    { id: 5, name: 'Algeria Voyage - SaaS', client: 'Mourad Z.', type: 'Dev', status: 'Code', progress: 20, date: '24/04/2026' },
-  ];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await axios.get('/api/crm?type=projects');
+        setProjects(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   const filteredProjects = filter === 'all' ? projects : projects.filter(p => p.type.toLowerCase() === filter);
 
@@ -86,32 +97,40 @@ const Projects = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {filteredProjects.map((proj) => (
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-8 py-10 text-center text-slate-500">Chargement des projets...</td>
+              </tr>
+            ) : filteredProjects.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-8 py-10 text-center text-slate-500">Aucun projet trouvé.</td>
+              </tr>
+            ) : filteredProjects.map((proj) => (
               <tr key={proj.id} className="hover:bg-white/[0.02] transition-colors group">
                 <td className="px-8 py-5">
                   <Link to={`/project/${proj.id}`} className="block group-hover:translate-x-1 transition-transform">
                     <p className="font-bold text-white mb-0.5">{proj.name}</p>
-                    <p className="text-xs text-slate-500">{proj.client}</p>
+                    <p className="text-xs text-slate-500">Projet #{proj.id.slice(0, 8)}</p>
                   </Link>
                 </td>
                 <td className="px-8 py-5">
                   <div className="flex items-center gap-2">
-                    {proj.type === 'Média' ? (
+                    {proj.type === 'media' ? (
                       <Film size={14} className="text-[#8a3fff]" />
                     ) : (
                       <Code size={14} className="text-[#00f2ff]" />
                     )}
-                    <span className="text-xs font-medium">{proj.type}</span>
+                    <span className="text-xs font-medium uppercase">{proj.type}</span>
                   </div>
                 </td>
                 <td className="px-8 py-5">
                   <div className="flex items-center gap-2 text-xs">
-                    {proj.status === 'Terminé' ? (
+                    {proj.current_step === 6 ? (
                       <CheckCircle2 size={14} className="text-success" />
                     ) : (
                       <Clock size={14} className="text-warning" />
                     )}
-                    {proj.status}
+                    Étape {proj.current_step}
                   </div>
                 </td>
                 <td className="px-8 py-5">
@@ -119,17 +138,17 @@ const Projects = () => {
                     <div className="flex-1 bg-white/5 h-1.5 rounded-full min-w-[80px]">
                       <div 
                         className="grad-bg h-full rounded-full" 
-                        style={{ width: `${proj.progress}%` }}
+                        style={{ width: `${(proj.current_step / 6) * 100}%` }}
                       ></div>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400">{proj.progress}%</span>
+                    <span className="text-[10px] font-bold text-slate-400">{Math.round((proj.current_step / 6) * 100)}%</span>
                   </div>
                 </td>
-                <td className="px-8 py-5 text-xs text-slate-500 font-medium">{proj.date}</td>
+                <td className="px-8 py-5 text-xs text-slate-500 font-medium">{new Date(proj.created_at).toLocaleDateString()}</td>
                 <td className="px-8 py-5 text-right">
-                  <button className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-500">
+                  <Link to={`/project/${proj.id}`} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-500 inline-block">
                     <MoreVertical size={18} />
-                  </button>
+                  </Link>
                 </td>
               </tr>
             ))}

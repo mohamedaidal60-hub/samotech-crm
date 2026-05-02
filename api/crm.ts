@@ -17,6 +17,10 @@ export default async function handler(req: any, res: any) {
           return res.status(200).json(leads);
         }
         if (query.type === 'projects') {
+          if (query.id) {
+            const project = await sql`SELECT * FROM projects WHERE id = ${query.id}`;
+            return res.status(200).json(project[0]);
+          }
           const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC`;
           return res.status(200).json(projects);
         }
@@ -25,17 +29,36 @@ export default async function handler(req: any, res: any) {
       case 'POST':
         if (body.type === 'new-lead') {
           const { first_name, last_name, company, phone, activities } = body.data;
-          const result = await sql`
+          const [lead] = await sql`
             INSERT INTO leads (first_name, last_name, company, phone, activities)
             VALUES (${first_name}, ${last_name}, ${company}, ${phone}, ${activities})
             RETURNING *
           `;
-          return res.status(201).json(result[0]);
+          // Create an initial project for the lead
+          const [project] = await sql`
+            INSERT INTO projects (lead_id, name, type)
+            VALUES (${lead.id}, ${company || (first_name + ' ' + last_name)}, 'media')
+            RETURNING *
+          `;
+          return res.status(201).json({ lead, project });
+        }
+        break;
+
+      case 'PUT':
+        if (body.type === 'update-project') {
+          const { id, current_step, total_amount, paid_amount } = body.data;
+          const result = await sql`
+            UPDATE projects 
+            SET current_step = ${current_step}, total_amount = ${total_amount}, paid_amount = ${paid_amount}
+            WHERE id = ${id}
+            RETURNING *
+          `;
+          return res.status(200).json(result[0]);
         }
         break;
 
       default:
-        res.setHeader('Allow', ['GET', 'POST']);
+        res.setHeader('Allow', ['GET', 'POST', 'PUT']);
         return res.status(405).end(`Method ${method} Not Allowed`);
     }
   } catch (error: any) {

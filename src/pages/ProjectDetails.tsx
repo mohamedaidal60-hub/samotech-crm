@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { 
   FileText, 
   Mic, 
@@ -18,14 +20,57 @@ import {
   Lock,
   Eye,
   EyeOff,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ProjectDetails = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'media' | 'dev'>('media');
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(1);
   const [showFinance, setShowFinance] = useState(false);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const res = await axios.get(`/api/crm?type=projects&id=${id}`);
+        setProject(res.data);
+        setActiveTab(res.data.type);
+        setCurrentStep(res.data.current_step);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProject();
+  }, [id]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await axios.put('/api/crm', {
+        type: 'update-project',
+        data: {
+          id: project.id,
+          current_step: currentStep,
+          total_amount: project.total_amount,
+          paid_amount: project.paid_amount
+        }
+      });
+      alert("Projet sauvegardé !");
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la sauvegarde");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const mediaSteps = [
     { id: 1, label: 'Contact & Appel', icon: Clock },
@@ -46,21 +91,38 @@ const ProjectDetails = () => {
 
   const steps = activeTab === 'media' ? mediaSteps : devSteps;
 
+  if (loading) return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <Loader2 size={48} className="animate-spin text-primary" />
+    </div>
+  );
+
+  if (!project) return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+      <h2 className="text-2xl font-bold">Projet non trouvé</h2>
+      <button onClick={() => navigate('/')} className="btn-primary">Retour au Dashboard</button>
+    </div>
+  );
+
   return (
     <div className="space-y-8">
       {/* Project Header */}
       <div className="glass-panel p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-6">
           <div className="w-16 h-16 rounded-2xl grad-bg flex items-center justify-center text-2xl font-bold border-2 border-white/20">
-            AV
+            {project.name[0]}
           </div>
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold">Aroma Verse - Pack Elite</h1>
-              <span className="text-xs font-bold px-2 py-0.5 bg-[#8a3fff]/20 text-[#8a3fff] rounded border border-[#8a3fff]/30">ACTIVE</span>
+              <h1 className="text-2xl font-bold">{project.name}</h1>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
+                project.status === 'active' ? 'bg-[#8a3fff]/20 text-[#8a3fff] border-[#8a3fff]/30' : 'bg-success/20 text-success border-success/30'
+              }`}>
+                {project.status.toUpperCase()}
+              </span>
             </div>
             <p className="text-slate-400 text-sm flex items-center gap-2">
-              <span className="font-semibold text-white">Client:</span> Ahmed Belkacem • +213 555 12 34 56
+              <span className="font-semibold text-white">ID:</span> #{project.id.slice(0, 8)}
             </p>
           </div>
         </div>
@@ -289,19 +351,29 @@ const ProjectDetails = () => {
             </h3>
             
             <div className={`space-y-4 transition-all duration-500 ${showFinance ? 'opacity-100' : 'opacity-20 blur-md pointer-events-none'}`}>
-              <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center">
-                <span className="text-xs text-slate-500">Montant Total</span>
-                <span className="font-bold text-lg">150,000 DZD</span>
+              <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
+                <span className="text-xs text-slate-500">Montant Total (DZD)</span>
+                <input 
+                  type="number" 
+                  className="bg-transparent border-none p-0 font-bold text-lg focus:ring-0"
+                  value={project.total_amount}
+                  onChange={(e) => setProject({...project, total_amount: parseFloat(e.target.value) || 0})}
+                />
               </div>
               
-              <div className="p-4 rounded-xl bg-[#10b981]/10 border border-[#10b981]/20 flex justify-between items-center">
-                <span className="text-xs text-[#10b981]">Payé</span>
-                <span className="font-bold text-[#10b981]">80,000 DZD</span>
+              <div className="p-4 rounded-xl bg-[#10b981]/10 border border-[#10b981]/20 flex flex-col gap-1">
+                <span className="text-xs text-[#10b981]">Payé (DZD)</span>
+                <input 
+                  type="number" 
+                  className="bg-transparent border-none p-0 font-bold text-[#10b981] focus:ring-0"
+                  value={project.paid_amount}
+                  onChange={(e) => setProject({...project, paid_amount: parseFloat(e.target.value) || 0})}
+                />
               </div>
 
               <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex justify-between items-center">
                 <span className="text-xs text-red-500">Reste à payer</span>
-                <span className="font-bold text-red-500">70,000 DZD</span>
+                <span className="font-bold text-red-500">{(project.total_amount - project.paid_amount).toLocaleString()} DZD</span>
               </div>
 
               <div className="pt-4 flex gap-2">
@@ -360,9 +432,13 @@ const ProjectDetails = () => {
             <ChevronRight size={18} />
           </button>
         </div>
-        <button className="flex items-center gap-2 text-primary font-bold text-sm px-4 py-2 hover:bg-primary/10 rounded-xl transition-all">
-          <Save size={18} />
-          Sauvegarder les modifications
+        <button 
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 text-primary font-bold text-sm px-4 py-2 hover:bg-primary/10 rounded-xl transition-all disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+          {saving ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
         </button>
       </div>
     </div>
